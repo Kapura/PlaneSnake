@@ -64,6 +64,27 @@ public class BoardScript : MonoBehaviour {
         NewGoal();
         _snake.Go();
         Camera.main.transform.localPosition = GetTargetCamPosition();
+        Debug.Log( Camera.main.transform.position.z );
+        Debug.Log( _snake.head.transform.position.z );
+        float camDist = _snake.head.transform.position.z - Camera.main.transform.position.z;
+
+        var snakeMat = _snake.baseSnakeMat;
+        float maxAlphaDist = camDist;
+        float minAlphaDist = maxAlphaDist - cubeSize;
+        float minBlackDist = maxAlphaDist;
+        float maxBlackDist = minBlackDist + cubeSize;
+
+        snakeMat.SetFloat( "_MinAlphaDist", minAlphaDist );
+        snakeMat.SetFloat( "_MaxAlphaDist", maxAlphaDist );
+        snakeMat.SetFloat( "_MinBlackDist", minBlackDist );
+        snakeMat.SetFloat( "_MaxBlackDist", maxBlackDist );
+
+        var goalMat = _stateDict["Goal"].mat;
+        goalMat.SetFloat( "_MinAlphaDist", minAlphaDist );
+        goalMat.SetFloat( "_MaxAlphaDist", maxAlphaDist );
+        goalMat.SetFloat( "_MinBlackDist", minBlackDist );
+        goalMat.SetFloat( "_MaxBlackDist", maxBlackDist );
+
         _nextMove = Time.time + moveInterval;
         running = true;
 	}
@@ -244,46 +265,6 @@ public class BoardScript : MonoBehaviour {
         } else {
             _XVoxelPlanes[v.point.x].Add(v);
             _YVoxelPlanes[v.point.y].Add(v);
-
-            //adjust colour
-            switch (Orientation) {
-                case Direction.North:
-                    if (v.point.y > _snake.position.y) {
-                        int delta = v.point.y - _snake.position.y;
-                        v.SetAlphaBrightness(GetRelativeAlpha(delta, cubeSize), 1f);
-                    } else {
-                        int delta = _snake.position.y - v.point.y;
-                        v.SetAlphaBrightness(1f, GetRelativeBrightness(delta, cubeSize));
-                    }
-                    break;
-                case Direction.West:
-                    if (v.point.x < _snake.position.x) {
-                        int delta = _snake.position.x - v.point.x;
-                        v.SetAlphaBrightness(GetRelativeAlpha(delta, cubeSize), 1f);
-                    } else {
-                        int delta = v.point.x - _snake.position.x;
-                        v.SetAlphaBrightness(1f, GetRelativeBrightness(delta, cubeSize));
-                    }
-                    break;
-                case Direction.South:
-                    if (v.point.y < _snake.position.y) {
-                        int delta = _snake.position.y - v.point.y;
-                        v.SetAlphaBrightness(GetRelativeAlpha(delta, cubeSize), 1f);
-                    } else {
-                        int delta = v.point.y - _snake.position.y;
-                        v.SetAlphaBrightness(1f, GetRelativeBrightness(delta, cubeSize));
-                    }
-                    break;
-                case Direction.East:
-                    if (v.point.x > _snake.position.x) {
-                        int delta = v.point.x - _snake.position.x;
-                        v.SetAlphaBrightness(GetRelativeAlpha(delta, cubeSize), 1f);
-                    } else {
-                        int delta = _snake.position.x - v.point.x;
-                        v.SetAlphaBrightness(1f, GetRelativeBrightness(delta, cubeSize));
-                    }
-                    break;
-            }
         }
         return true;
     }
@@ -334,99 +315,6 @@ public class BoardScript : MonoBehaviour {
         return (float)(maxDepth - delta) / (float)maxDepth;
     }
 
-    void StartVoxelAppearenceLerps() {
-        float alpha, relativeBrightness;
-        int delta;
-        bool xOriented = true;
-
-        for (int i = 0; i < cubeSize; i++) {
-            switch (Orientation) {
-                case Direction.North:
-                    // voxets > snakepos.y are close
-                    // voxets < snakepos.y are far
-                    xOriented = false;
-                    if (i > _snake.position.y) {
-                        delta = i - _snake.position.y;
-                        alpha = GetRelativeAlpha(delta, cubeSize);
-                        relativeBrightness = 1f;
-                    } else {
-                        alpha = 1f;
-                        delta = _snake.position.y - i;
-                        if (delta > 0) {
-                            relativeBrightness = GetRelativeBrightness(delta + 1, cubeSize + 1);
-                        } else {
-                            relativeBrightness = GetRelativeBrightness(delta, cubeSize);
-                        }
-                    }
-                    break;
-                case Direction.West:
-                    //voxets < snakepos.x are close
-                    //voxets > snakepos.x are far
-                    if (i < _snake.position.x) {
-                        relativeBrightness = 1f;
-                        delta = _snake.position.x - i;
-                        alpha = GetRelativeAlpha(delta, cubeSize);
-                    } else {
-                        alpha = 1f;
-                        delta = i - _snake.position.x;
-                        if (delta > 0) {
-                            relativeBrightness = GetRelativeBrightness(delta + 1, cubeSize + 1);
-                        } else {
-                            relativeBrightness = GetRelativeBrightness(delta, cubeSize);
-                        }
-                    }
-                    break;
-                case Direction.South:
-                    // voxets < snakePos.y are close
-                    // voxets > snakepos.y are far
-                    xOriented = false;
-                    if (i < _snake.position.y) {
-                        relativeBrightness = 1f;
-                        delta = _snake.position.y - i;
-                        alpha = GetRelativeAlpha(delta, cubeSize);
-                    } else {
-                        alpha = 1f;
-                        delta = i - _snake.position.y;
-                        if (delta > 0) {
-                            relativeBrightness = GetRelativeBrightness(delta + 1, cubeSize + 1);
-                        } else {
-                            relativeBrightness = GetRelativeBrightness(delta, cubeSize);
-                        }
-                    }
-                    break;
-                case Direction.East:
-                    // voxets > snakepos.x are close
-                    // voxets < snakepos.x are far
-                    if (i > _snake.position.x) {
-                        relativeBrightness = 1f;
-                        delta = i - _snake.position.x;
-                        alpha = GetRelativeAlpha(delta, cubeSize);
-                    } else {
-                        alpha = 1f;
-                        delta = _snake.position.x - i;
-                        if (delta > 0) {
-                            relativeBrightness = GetRelativeBrightness(delta + 1, cubeSize + 1);
-                        } else {
-                            relativeBrightness = GetRelativeBrightness(delta, cubeSize);
-                        }
-                    }
-                    break;
-                default:
-                    alpha = 1f;
-                    relativeBrightness = 0f;
-                    break;
-
-            }
-
-            if (xOriented) {
-                _XVoxelPlanes[i].StartLerp(alpha, relativeBrightness, rotateTime);
-            } else {
-                _YVoxelPlanes[i].StartLerp(alpha, relativeBrightness, rotateTime);
-            }
-
-        }
-    }
-
     IEnumerator RotateBoard(float angles) {
         isRotating = true;
         _snake.DisableGuidelines();
@@ -435,7 +323,6 @@ public class BoardScript : MonoBehaviour {
         Vector3 initialCamPosition = Camera.main.transform.localPosition;
         Vector3 targetCamPosition = GetTargetCamPosition();
         // initialise voxel's lerpappearence process
-        StartVoxelAppearenceLerps();
         var initialRotation = transform.localRotation;
 
         transform.Rotate( Vector3.up, angles );

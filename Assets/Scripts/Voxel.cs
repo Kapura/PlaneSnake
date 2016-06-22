@@ -3,16 +3,6 @@ using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 
-public static class VoxelExtensions {
-    public static IEnumerable<Voxel> StartLerp(this IEnumerable<Voxel> _this, float alpha, float relB, float lerpLength) {
-        foreach (Voxel v in _this) {
-            v.StartLerp(alpha, relB, lerpLength);
-        }
-        return _this;
-    }
-
-}
-
 public class Voxel : MonoBehaviour {
 
     public Point3 point;
@@ -25,7 +15,7 @@ public class Voxel : MonoBehaviour {
             if (_state.name != "Empty") {
                 rend.enabled = true;
                 baseColor = _state.mat.color;
-                MaterialColor = baseColor;
+                RendMat = _state.mat;
                 for (int i = 0; i < _numReflections; i++) {
                     _reflections[i].GetComponent<BoxReflections>().SetColor(baseColor);
                     _reflections[i].SetActive(true);
@@ -159,47 +149,22 @@ public class Voxel : MonoBehaviour {
     public Color MaterialColor
     {
         get { return rend.material.color; }
+        //set { rend.material.color = value; }
+    }
+
+    public Material RendMat
+    {
+        get { return rend.material; }
         set {
-            var newMat = GetMaterial( _state, value );
-            rend.material = newMat;
-            for ( int i = 0; i < extensionRenderers.Length; i++ )
+            rend.material = value;
+            foreach ( var renderer in extensionRenderers )
             {
-                extensionRenderers[i].material = newMat;
+                renderer.material = value;
             }
         }
     }
 
     public Color baseColor;
-
-    private static Dictionary<string, Material> _matDict = new Dictionary<string, Material>();
-    Material GetMaterial( VoxelState state, Color color )
-    {
-        uint colorIndex = 0;
-        colorIndex |= (uint)( 256 * color.r ) << 24;
-        colorIndex |= (uint)( 256 * color.g ) << 16;
-        colorIndex |= (uint)( 256 * color.b ) << 8;
-        colorIndex |= (uint)( 256 * color.a );
-
-        var fullMatName = state.name + colorIndex.ToString();
-
-        if ( !_matDict.ContainsKey( fullMatName ) )
-        {
-            var newMat = new Material( state.mat );
-            newMat.color = color;
-            _matDict[fullMatName] = newMat;
-        }
-        return _matDict[fullMatName];
-    }
-
-    private float _initialAlpha;
-    private HSBColor _hsbColor;
-    private float _initialB;
-    private float _targetAlpha, _targetRelB;
-    private float _targetTime;
-    private float _targetB;
-
-    private bool _lerping;
-    private float _lerpLength;
 
     public LineRenderer line_h;
     public LineRenderer line_v;
@@ -294,48 +259,6 @@ public class Voxel : MonoBehaviour {
             _reflections[_numReflections] = newRef;
             _numReflections += 1;
         }
-    }
-
-    public void StartLerp(float alpha, float relB, float lerpLength) {
-        _targetTime = Time.time + lerpLength;
-        _lerpLength = lerpLength;
-        _initialAlpha = rend.material.color.a;
-        _targetAlpha = alpha;
-        _hsbColor = new HSBColor(rend.material.color);
-        _initialB = _hsbColor.b;
-
-        HSBColor base_c = new HSBColor(baseColor);
-        _targetB = base_c.b * relB;
-        _lerping = true;
-    }
-
-    void LateUpdate() {
-        if (_lerping) {
-            if (_targetTime > Time.time) {
-                float t = 1f - ((_targetTime - Time.time) / _lerpLength);
-                _hsbColor.b = Mathf.Lerp(_initialB, _targetB, t);
-                _hsbColor.a = Mathf.Lerp(_initialAlpha, _targetAlpha, t);
-                MaterialColor = _hsbColor.ToColor();
-                for (int i = 0; i < _numReflections; i++) {
-                    _reflections[i].GetComponent<BoxReflections>().SetColor(_hsbColor.ToColor());
-                }
-            } else {
-                _lerping = false;
-                _hsbColor.b = _targetB;
-                _hsbColor.a = _targetAlpha;
-                MaterialColor = _hsbColor.ToColor();
-                for (int i = 0; i < _numReflections; i++) {
-                    _reflections[i].GetComponent<BoxReflections>().SetColor(_hsbColor.ToColor());
-                }
-            }
-        }
-    }
-
-    public void SetAlphaBrightness(float alpha, float relativeB) {
-        HSBColor hsb = new HSBColor(baseColor);
-        hsb.a = alpha;
-        hsb.b *= relativeB;
-        MaterialColor = hsb.ToColor();
     }
 
     public void EnableGuidelines(Vector3 top, Vector3 bottom, Vector3 left, Vector3 right) {

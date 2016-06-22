@@ -24,9 +24,12 @@ public class SnakeScript : MonoBehaviour {
     private bool _alive = true;
     private LinkedList<Point3> _snakeList;
 
-    private Voxel _head = null;
+    public Voxel head = null;
 
     private List<Voxel> _wiredBoxes;
+
+    public Material baseSnakeMat;
+    public Material snakeHeadMat;
 
     void Awake() {
         _board = GetComponent<BoardScript>();
@@ -46,18 +49,16 @@ public class SnakeScript : MonoBehaviour {
 	}
 
     bool MakeSnake(Point3 newSnakePos) {
-        if (_head != null)
+        if (head != null)
             DisableGuidelines();
 
         if (_board.SetVoxel(newSnakePos, "Snake")) {
 
-            if (_head != null) {
-                _head.MaterialColor = _head.baseColor;
+            if (head != null) {
+                head.RendMat = baseSnakeMat;
             }
-            _head = _board.GetVoxelAt(newSnakePos);
-            HSBColor hsb = new HSBColor(_head.MaterialColor);
-            hsb.s *= 1.5f;
-            _head.MaterialColor = hsb.ToColor();
+            head = _board.GetVoxelAt( newSnakePos );
+            head.RendMat = snakeHeadMat;
 
             LinkedListNode<Point3> lln = new LinkedListNode<Point3>(newSnakePos);
             _snakeList.AddFirst(lln);
@@ -69,37 +70,37 @@ public class SnakeScript : MonoBehaviour {
                 if ( neckPoint.x > newSnakePos.x )
                 {
                     // East
-                    _head.ExtendEast = true;
+                    head.ExtendEast = true;
                     neck.ExtendWest = true;
                 }
                 else if ( neckPoint.x < newSnakePos.x )
                 {
                     // West
-                    _head.ExtendWest = true;
+                    head.ExtendWest = true;
                     neck.ExtendEast = true;
                 }
                 else if ( neckPoint.y > newSnakePos.y )
                 {
                     // North
-                    _head.ExtendNorth = true;
+                    head.ExtendNorth = true;
                     neck.ExtendSouth = true;
                 }
                 else if ( neckPoint.y < newSnakePos.y )
                 {
                     // South
-                    _head.ExtendSouth = true;
+                    head.ExtendSouth = true;
                     neck.ExtendNorth = true;
                 }
                 else if ( neckPoint.z > newSnakePos.z )
                 {
                     // Above
-                    _head.ExtendTop = true;
+                    head.ExtendTop = true;
                     neck.ExtendBottom = true;
                 }
                 else if ( neckPoint.z < newSnakePos.z )
                 {
                     // Below
-                    _head.ExtendBottom = true;
+                    head.ExtendBottom = true;
                     neck.ExtendTop = true;
                 }
 
@@ -113,7 +114,7 @@ public class SnakeScript : MonoBehaviour {
     }
 
     public void DisableGuidelines() {
-        _head.DisableGuidelines();
+        head.DisableGuidelines();
     }
 
     public void ClearWireBoxes() {
@@ -217,7 +218,7 @@ public class SnakeScript : MonoBehaviour {
                 _wiredBoxes.Add(lastVox);
             }
         }
-        _head.EnableGuidelines(top, bottom, left, right);
+        head.EnableGuidelines(top, bottom, left, right);
         foreach (Voxel v in _wiredBoxes) {
             _board.SetVoxel(v.point, "Cubed");
         }
