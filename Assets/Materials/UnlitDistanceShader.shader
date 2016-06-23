@@ -42,9 +42,9 @@ Shader "Custom/UnlitDistanceShader" {
 				float zPos = mul(_Object2World, v.vertex).z;
 				float zDist = zPos - _WorldSpaceCameraPos.z;
 				float blackPct = clamp((zDist - _MinBlackDist) / (_MaxBlackDist - _MinBlackDist), 0.0, 1.0);
-                o.color.rgb = lerp(_Color.rgb, _DarkColor, blackPct);
+                o.color.rgb = lerp(_Color.rgb, _DarkColor, (blackPct * (1 - blackPct)) + blackPct);
 				float alphaPct = clamp((zDist - _MinAlphaDist) / (_MaxAlphaDist - _MinAlphaDist), 0.0, 1.0);
-                o.color.a = alphaPct * alphaPct;
+                o.color.a = _Color.a * alphaPct * alphaPct;
                 return o;
             }
  

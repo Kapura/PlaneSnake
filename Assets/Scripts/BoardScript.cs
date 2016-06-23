@@ -63,6 +63,7 @@ public class BoardScript : MonoBehaviour {
         InitVoxelSpace(new Point3(cubeSize, cubeSize, cubeSize));
         NewGoal();
         _snake.Go();
+        _baseCamPosition.z = cubeSize * -2f;
         Camera.main.transform.localPosition = GetTargetCamPosition();
         float camDist = _snake.head.transform.position.z - Camera.main.transform.position.z;
 
@@ -70,7 +71,7 @@ public class BoardScript : MonoBehaviour {
         _snake.baseSnakeMat = snakeMat;
         float maxAlphaDist = camDist - 0.5f;
         float minAlphaDist = maxAlphaDist - cubeSize;
-        float minBlackDist = camDist + 0.5f;
+        float minBlackDist = camDist - 0.5f;
         float maxBlackDist = minBlackDist + cubeSize;
 
         snakeMat.SetFloat( "_MinAlphaDist", minAlphaDist );
