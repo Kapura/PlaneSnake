@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 public class Voxel : MonoBehaviour
 {
-    public Material squareReflectionMaterial;
 
     public Point3 point;
 
@@ -14,20 +13,11 @@ public class Voxel : MonoBehaviour
         get { return _state; }
         set {
             _state = value;
-            if (_state.name == "Cubed" )
-            {
+            if (_state.name != "Empty") {
                 RendMat = _state.mat;
                 rend.enabled = true;
                 for (int i = 0; i < _numActiveReflections; i++) {
-                    _reflections[i].ReflectionMaterial = squareReflectionMaterial;
-                    _reflections[i].ReflectionsEnabled = true;
-                }
-            }
-            else if (_state.name != "Empty") {
-                RendMat = _state.mat;
-                rend.enabled = true;
-                for (int i = 0; i < _numActiveReflections; i++) {
-                    _reflections[i].ReflectionMaterial = _state.mat;
+                    _reflections[i].ReflectionMaterial = _state.reflectionMat;
                     _reflections[i].ReflectionsEnabled = true;
                 }
             } else {  // "Empty" keyword disables the renderers

@@ -70,7 +70,7 @@ public class BoardScript : MonoBehaviour {
         var snakeMat = GetState("Snake").mat;
         _snake.baseSnakeMat = snakeMat;
         float maxAlphaDist = camDist - 0.5f;
-        float minAlphaDist = maxAlphaDist - cubeSize;
+        float minAlphaDist = maxAlphaDist - (0.75f * cubeSize);
         float minBlackDist = camDist - 0.5f;
         float maxBlackDist = minBlackDist + cubeSize;
 
