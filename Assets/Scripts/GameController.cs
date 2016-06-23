@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -14,6 +15,8 @@ public class GameController : MonoBehaviour
     public Text yourScoreText;
     public GameObject menuScreen;
 
+    public Dragger difficultySelector;
+
     public string soundPath;
     public string tone1, tone2, grabTone, turnTone, deathTone;
     public string music;
@@ -26,6 +29,9 @@ public class GameController : MonoBehaviour
 
     public bool _toning1 = true;
 
+    public int modeIndex = 1;
+    Action[] modeArray;
+
     public InstaButton upButton, downButton, leftButton, rightButton;
     public InstaButton rotLeft, rotRight;
 
@@ -33,6 +39,7 @@ public class GameController : MonoBehaviour
 
     void Awake()
     {
+        InitModeArray();
         board = GetComponent<BoardScript>();
         snake = GetComponent<SnakeScript>();
         resetPanel.gameObject.SetActive( false );
@@ -50,6 +57,13 @@ public class GameController : MonoBehaviour
          */
         rotRight.OnClick = RotateLeft;
         rotLeft.OnClick = RotateRight;
+
+        difficultySelector.OnPositionChanged += SetDifficulty;
+    }
+
+    public void SetDifficulty( int i )
+    {
+        modeIndex = i;
     }
 
     public void StartChildMode()
@@ -65,6 +79,20 @@ public class GameController : MonoBehaviour
     public void StartArcadeMode()
     {
         StartNewGame( 10, .25f, 5 );
+    }
+
+    void InitModeArray()
+    {
+        modeArray = new Action[3];
+        modeArray[0] = StartChildMode;
+        modeArray[1] = StartStrategicMode;
+        modeArray[2] = StartArcadeMode;
+    }
+
+    public void StartDynamicMode()
+    {
+        Debug.Log( modeIndex );
+        modeArray[modeIndex]();
     }
 
     void StartNewGame( int size, float moveInterval, int growthRate, int goalCount = int.MaxValue )
