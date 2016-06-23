@@ -8,16 +8,10 @@ public class SwipeArea : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public LineRenderer liney;
 
-
 	// Use this for initialization
 	void Awake ()
     {
         liney.enabled = false;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
 	}
 
     public void OnDrag( PointerEventData eventData )

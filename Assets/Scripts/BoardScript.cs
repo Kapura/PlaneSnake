@@ -64,14 +64,13 @@ public class BoardScript : MonoBehaviour {
         NewGoal();
         _snake.Go();
         Camera.main.transform.localPosition = GetTargetCamPosition();
-        Debug.Log( Camera.main.transform.position.z );
-        Debug.Log( _snake.head.transform.position.z );
         float camDist = _snake.head.transform.position.z - Camera.main.transform.position.z;
 
-        var snakeMat = _snake.baseSnakeMat;
-        float maxAlphaDist = camDist;
+        var snakeMat = GetState("Snake").mat;
+        _snake.baseSnakeMat = snakeMat;
+        float maxAlphaDist = camDist - 0.5f;
         float minAlphaDist = maxAlphaDist - cubeSize;
-        float minBlackDist = maxAlphaDist;
+        float minBlackDist = camDist + 0.5f;
         float maxBlackDist = minBlackDist + cubeSize;
 
         snakeMat.SetFloat( "_MinAlphaDist", minAlphaDist );
@@ -106,6 +105,7 @@ public class BoardScript : MonoBehaviour {
         transform.localRotation = Quaternion.identity;
         Orientation = Direction.South;
 
+        // Clear the old boxes
         foreach (Transform t in this.transform) {
             if (t != frameTransform) {
                 Destroy(t.gameObject);
@@ -155,6 +155,7 @@ public class BoardScript : MonoBehaviour {
                     vox.State = GetState("Empty");
                     vox.point = new Point3(x, y, z);
 
+                    // Turn on reflections for edge voxels
                     if (x == 0) {
                         vox.WestRef = true;
                     }
@@ -180,8 +181,6 @@ public class BoardScript : MonoBehaviour {
         }
 
         frameTransform.localScale = new Vector3(cubeSize, cubeSize, cubeSize);
-        float localScale = 5f/(float)cubeSize;
-        transform.localScale = new Vector3(localScale, localScale, localScale);
     }
 
     void NewGoal() {
@@ -192,14 +191,14 @@ public class BoardScript : MonoBehaviour {
         }
 
         Point3 oldGoal = _goal;
-        bool hasFound = false;
-        while (!hasFound) {
+        bool hasFoundGoal = false;
+        while (!hasFoundGoal) {
             _goal.x = Random.Range(0, cubeSize);
             _goal.y = Random.Range(0, cubeSize);
             _goal.z = Random.Range(0, cubeSize);
 
             if (_goal != oldGoal && GetVoxelAt(_goal).State.name == "Empty") {
-                hasFound = true;
+                hasFoundGoal = true;
             }
         }
 
@@ -305,16 +304,6 @@ public class BoardScript : MonoBehaviour {
         StartCoroutine(RotateBoard(-90f));
     }
 
-    float GetRelativeAlpha(int delta, int maxDepth) {
-        float alpha = .25f + (.5f * ((float)(maxDepth - delta) / (float)maxDepth));
-        alpha *= alpha;
-        return alpha;
-    }
-
-    float GetRelativeBrightness(int delta, int maxDepth) {
-        return (float)(maxDepth - delta) / (float)maxDepth;
-    }
-
     IEnumerator RotateBoard(float angles) {
         isRotating = true;
         _snake.DisableGuidelines();
@@ -339,15 +328,6 @@ public class BoardScript : MonoBehaviour {
 
             // adjust camera distance (constant planar distance)
             Camera.main.transform.localPosition = Vector3.Lerp(initialCamPosition, targetCamPosition, t);
-
-            // fade out nearer voxel planes
-            // @ -1, fade to low alpha (~.1)
-            // @ < -1, fade to alpha=0
-            //TODO
-
-            // darken further voxel planes
-            // furthest plane should be a single step from black
-            //TODO
             
             yield return null;
         }
@@ -363,16 +343,16 @@ public class BoardScript : MonoBehaviour {
         Vector3 newCamPos = _baseCamPosition;
         switch (Orientation) {
             case Direction.North:
-                newCamPos.z += (cubeSize - 1 - _snake.position.y) * transform.localScale.z;
+                newCamPos.z += (cubeSize - 1 - _snake.position.y);
                 break;
             case Direction.West:
-                newCamPos.z += _snake.position.x * transform.localScale.z;
+                newCamPos.z += _snake.position.x;
                 break;
             case Direction.South:
-                newCamPos.z += _snake.position.y * transform.localScale.z;
+                newCamPos.z += _snake.position.y;
                 break;
             case Direction.East:
-                newCamPos.z += (cubeSize - 1 - _snake.position.x) * transform.localScale.z;
+                newCamPos.z += (cubeSize - 1 - _snake.position.x);
                 break;
         }
         return newCamPos;

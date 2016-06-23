@@ -3,23 +3,33 @@ using System.Collections;
 
 public class BoxReflections : MonoBehaviour {
 
-    private Renderer[] _rends;
+    public Renderer[] rends;
 
-    private Material _refMat = null;
-
-    void Awake() {
-        _rends = new Renderer[transform.childCount];
-        int i = 0;
-        foreach (Transform t in transform) {
-            _rends[i] = t.GetComponent<Renderer>();
-            if (_refMat == null) {
-                _refMat = new Material(_rends[i].material);
+    public Material ReflectionMaterial
+    {
+        set
+        {
+            if ( value != null )
+            {
+                foreach ( Renderer r in rends )
+                {
+                    r.material = value;
+                }
             }
-            _rends[i].material = _refMat;
         }
     }
 
-    public void SetColor(Color newC) {
-        _refMat.color = newC;
+    bool _refEnabled;
+    public bool ReflectionsEnabled
+    {
+        get { return _refEnabled; }
+        set
+        {
+            _refEnabled = value;
+            foreach ( Renderer r in rends )
+            {
+                r.enabled = _refEnabled;
+            }
+        }
     }
 }

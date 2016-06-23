@@ -3,7 +3,9 @@ using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Voxel : MonoBehaviour {
+public class Voxel : MonoBehaviour
+{
+    public Material squareReflectionMaterial;
 
     public Point3 point;
 
@@ -12,25 +14,32 @@ public class Voxel : MonoBehaviour {
         get { return _state; }
         set {
             _state = value;
-            if (_state.name != "Empty") {
-                rend.enabled = true;
-                baseColor = _state.mat.color;
+            if (_state.name == "Cubed" )
+            {
                 RendMat = _state.mat;
-                for (int i = 0; i < _numReflections; i++) {
-                    _reflections[i].GetComponent<BoxReflections>().SetColor(baseColor);
-                    _reflections[i].SetActive(true);
+                rend.enabled = true;
+                for (int i = 0; i < _numActiveReflections; i++) {
+                    _reflections[i].ReflectionMaterial = squareReflectionMaterial;
+                    _reflections[i].ReflectionsEnabled = true;
                 }
-            } else {
+            }
+            else if (_state.name != "Empty") {
+                RendMat = _state.mat;
+                rend.enabled = true;
+                for (int i = 0; i < _numActiveReflections; i++) {
+                    _reflections[i].ReflectionMaterial = _state.mat;
+                    _reflections[i].ReflectionsEnabled = true;
+                }
+            } else {  // "Empty" keyword disables the renderers
                 rend.enabled = false;
-                baseColor = Color.clear;
-                for (int i = 0; i < _numReflections; i++) {
-                    _reflections[i].SetActive(false);
+                for (int i = 0; i < _numActiveReflections; i++) {
+                    _reflections[i].ReflectionsEnabled = false;
                 }
             }
         }
     }
 
-    // Extensions
+    // Extensions from the centre cube to side cubes on other sides
     uint _extMask = 0;
     public GameObject TopExtension, BottomExtension, NorthExtension, EastExtension, SouthExtension, WestExtension;
     public bool ExtendTop
@@ -88,8 +97,9 @@ public class Voxel : MonoBehaviour {
         }
     }
 
+    private Renderer[] extensionRenderers;
 
-    // Reflections
+    // Reflections get turned on when the voxel is being generated, then they are spawned in Start()
     uint _refMask = 0;
     public bool TopRef
     {
@@ -124,7 +134,7 @@ public class Voxel : MonoBehaviour {
 
     static uint SetBit( uint mask, bool value, int bitNum )
     {
-        if (value )
+        if (value)
         {
             return mask | (uint)(1 << bitNum);
         }
@@ -141,10 +151,9 @@ public class Voxel : MonoBehaviour {
 
     public GameObject reflectionPrefab;
 
-    private GameObject[] _reflections;
-    private int _numReflections = 0;
+    BoxReflections[] _reflections;
+    int _numActiveReflections = 0;
 
-    private Renderer[] extensionRenderers;
     public Renderer rend;
     public Color MaterialColor
     {
@@ -166,10 +175,8 @@ public class Voxel : MonoBehaviour {
 
     public Color baseColor;
 
-    public LineRenderer line_h;
-    public LineRenderer line_v;
-
-    private static Dictionary<Color, Material> _colorDict;
+    public LineRenderer line_h; // Horizontal line on the current 2d plane
+    public LineRenderer line_v; // Vertical line on the current 2d plane
 
     void Awake() {
         Assert.IsNotNull( rend );
@@ -181,83 +188,86 @@ public class Voxel : MonoBehaviour {
             SouthExtension.GetComponent<Renderer>(),
             WestExtension.GetComponent<Renderer>()
         };
+        // Turn off all extensions
         ExtendTop = false;
         ExtendBottom = false;
         ExtendNorth = false;
         ExtendEast = false;
         ExtendSouth = false;
         ExtendWest = false;
+
         DisableGuidelines();
     }
 
     void Start() {
-        _reflections = new GameObject[6];
+        // Voxels stay at fixed places in the cube, so we need only generate the proper reflections once
+        _reflections = new BoxReflections[6];
         GameObject newRef = null;
-        _numReflections = 0;
+        _numActiveReflections = 0;
         if (TopRef) {
             newRef = Instantiate(reflectionPrefab) as GameObject;
             newRef.transform.parent = this.transform;
             newRef.transform.Rotate(0, 0, 180f);
             newRef.transform.localPosition = new Vector3(0, .51f, 0);
             newRef.transform.localScale = Vector3.one;
-            newRef.SetActive(false);
-            _reflections[_numReflections] = newRef;
-            _numReflections += 1;
+            _reflections[_numActiveReflections] = newRef.GetComponent<BoxReflections>();
+            _reflections[_numActiveReflections].ReflectionsEnabled = false;
+            _numActiveReflections += 1;
         }
 
         if (BottomRef) {
             newRef = Instantiate(reflectionPrefab) as GameObject;
             newRef.transform.parent = this.transform;
             newRef.transform.Rotate(0, 0, 0);
-            newRef.transform.localPosition = new Vector3(0, -0.51f, 0);
+            newRef.transform.localPosition = new Vector3( 0, -0.51f, 0 );
             newRef.transform.localScale = Vector3.one;
-            newRef.SetActive(false);
-            _reflections[_numReflections] = newRef;
-            _numReflections += 1;
+            _reflections[_numActiveReflections] = newRef.GetComponent<BoxReflections>();
+            _reflections[_numActiveReflections].ReflectionsEnabled = false;
+            _numActiveReflections += 1;
         }
 
         if (NorthRef) {
             newRef = Instantiate(reflectionPrefab) as GameObject;
             newRef.transform.parent = this.transform;
             newRef.transform.Rotate(-90, 0, 0);
-            newRef.transform.localPosition = new Vector3(0, 0, 0.51f);
+            newRef.transform.localPosition = new Vector3( 0, 0, 0.51f );
             newRef.transform.localScale = Vector3.one;
-            newRef.SetActive(false);
-            _reflections[_numReflections] = newRef;
-            _numReflections += 1;
+            _reflections[_numActiveReflections] = newRef.GetComponent<BoxReflections>();
+            _reflections[_numActiveReflections].ReflectionsEnabled = false;
+            _numActiveReflections += 1;
         }
 
         if (SouthRef) {
             newRef = Instantiate(reflectionPrefab) as GameObject;
             newRef.transform.parent = this.transform;
             newRef.transform.Rotate(90, 0, 0);
-            newRef.transform.localPosition = new Vector3(0, 0, -0.51f);
+            newRef.transform.localPosition = new Vector3( 0, 0, -0.51f );
             newRef.transform.localScale = Vector3.one;
-            newRef.SetActive(false);
-            _reflections[_numReflections] = newRef;
-            _numReflections += 1;
+            _reflections[_numActiveReflections] = newRef.GetComponent<BoxReflections>();
+            _reflections[_numActiveReflections].ReflectionsEnabled = false;
+            _numActiveReflections += 1;
         }
 
         if (EastRef) {
             newRef = Instantiate(reflectionPrefab) as GameObject;
             newRef.transform.parent = this.transform;
             newRef.transform.Rotate(0, 0, 90);
-            newRef.transform.localPosition = new Vector3(0.51f, 0, 0);
+            newRef.transform.localPosition = new Vector3( 0.51f, 0, 0 );
             newRef.transform.localScale = Vector3.one;
-            newRef.SetActive(false);
-            _reflections[_numReflections] = newRef;
-            _numReflections += 1;
+            _reflections[_numActiveReflections] = newRef.GetComponent<BoxReflections>();
+            _reflections[_numActiveReflections].ReflectionsEnabled = false;
+            _numActiveReflections += 1;
         }
 
         if (WestRef) {
             newRef = Instantiate(reflectionPrefab) as GameObject;
             newRef.transform.parent = this.transform;
             newRef.transform.Rotate(0, 0, -90);
-            newRef.transform.localPosition = new Vector3(-0.51f, 0, 0);
+            newRef.transform.localPosition = new Vector3( -0.51f, 0, 0 );
             newRef.transform.localScale = Vector3.one;
-            newRef.SetActive(false);
-            _reflections[_numReflections] = newRef;
-            _numReflections += 1;
+            _reflections[_numActiveReflections] = newRef.GetComponent<BoxReflections>();
+            _reflections[_numActiveReflections].ReflectionsEnabled = false;
+            _numActiveReflections += 1;
         }
     }
 
