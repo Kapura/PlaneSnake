@@ -97,7 +97,7 @@ public class GameController : MonoBehaviour
 
     void StartNewGame( int size, float moveInterval, int growthRate, int goalCount = int.MaxValue )
     {
-        board.ui.Score = 0;
+        board.score = 0;
 
         board.cubeSize = size;
         board.moveInterval = moveInterval;
@@ -224,7 +224,7 @@ public class GameController : MonoBehaviour
         AudioCenter.playSound( soundIds[deathTone] );
         snake.OnSnakeDeath();
         resetPanel.SetActive( true );
-        yourScoreText.text = "Score: " + board.ui.Score;
+        yourScoreText.text = "Score: " + board.score;
         highScores.UpdateTable();
     }
 

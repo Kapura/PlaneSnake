@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class BoardScript : MonoBehaviour {
 
-    public UIScript ui;
     public GameObject voxelPrefab;
     public Transform frameTransform;
     public Transform universe;
@@ -41,6 +40,8 @@ public class BoardScript : MonoBehaviour {
 
     private Point3 _goal;
 
+    public int score;
+
     void Awake() {
         Random.seed = (int)System.DateTime.Now.ToBinary();
         _stateDict = new Dictionary<string, VoxelState>();
@@ -54,8 +55,7 @@ public class BoardScript : MonoBehaviour {
         isRotating = false;
         _baseCamPosition = Camera.main.transform.localPosition;
         running = false;
-        ui.Score = 0;
-
+        score = 0;
     }
 
 	// Use this for initialization
@@ -95,9 +95,6 @@ public class BoardScript : MonoBehaviour {
             if (!isRotating && Time.time > _nextMove) {
                 _nextMove += moveInterval;
                 _snake.Move();
-            }
-            if (ui.SnakeOrientation != _snake.planarDirection) {
-                ui.SnakeOrientation = _snake.planarDirection;
             }
         }
 	}
@@ -245,7 +242,7 @@ public class BoardScript : MonoBehaviour {
             // check to see if there's anything in the snakes way
             if (v.State.name == "Goal") {
                 // grow + seed new goal
-                ui.Score += 1;
+                score += 1;
                 _snake.snakeLength += growthRate;
                 goalCount -= 1;
                 _ctrl.PlayGrabTone();

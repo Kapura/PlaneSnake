@@ -20,7 +20,6 @@ public class SnakeScript : MonoBehaviour {
     public int snakeLength;
 
     private BoardScript _board;
-    private GameController _ctrl;
     private bool _alive = true;
     private LinkedList<Point3> _snakeList;
 
@@ -33,7 +32,6 @@ public class SnakeScript : MonoBehaviour {
 
     void Awake() {
         _board = GetComponent<BoardScript>();
-        _ctrl = GetComponent<GameController>();
         _snakeList = new LinkedList<Point3>();
         _wiredBoxes = new List<Voxel>(3);
     }

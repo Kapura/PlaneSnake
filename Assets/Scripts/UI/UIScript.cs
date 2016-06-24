@@ -11,7 +11,7 @@ public class UIScript : MonoBehaviour {
     public GameController ctrl;
 
     private int _score;
-    public int Score {
+    int Score {
         get { return _score; }
         set {
             _score = value;

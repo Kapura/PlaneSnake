@@ -7,10 +7,15 @@ public class HighScoresTable : MonoBehaviour {
     public int numPanels;
     public BoardScript board;
 
+    public GameObject letterGrid;
+
     public string playerName = "Darnabelle";
 
     const string HIGH_SCORE_NAME_PREFIX = "hs_name_";
     const string HIGH_SCORE_SCORE_PREFIX = "hs_score_";
+
+    int[] scores;
+    string[] names;
 
     HighScorePanel[] panels;
 
@@ -27,21 +32,33 @@ public class HighScoresTable : MonoBehaviour {
 
     public void UpdateTable()
     {
-        int[] scores;
-        string[] names;
         GetHighScores( panels.Length, out names, out scores );
-        int score = board.ui.Score;
-        if ( score > scores[numPanels - 1] )
+        if ( board.score > scores[numPanels - 1] )
         {
-            // Insering new score
-            int index = 0;
-            while ( scores[index] >= score )
-            {
-                index++;
-            }
-            SetHighScore( numPanels, index, playerName, score );
-            GetHighScores( numPanels, out names, out scores );
+            letterGrid.SetActive( true );
         }
+        else
+        {
+            for ( int i = 0; i < panels.Length; i++ )
+            {
+                panels[i].Initialise( ( i + 1 ).ToString() + ": " + names[i], scores[i] );
+            }
+        }
+    }
+
+    public void SetNewName( string name )
+    {
+        letterGrid.SetActive( false );
+        playerName = name;
+        
+        // Insering new score
+        int index = 0;
+        while ( scores[index] >= board.score )
+        {
+            index++;
+        }
+        SetHighScore( numPanels, index, playerName, board.score );
+        GetHighScores( numPanels, out names, out scores );
 
         for ( int i = 0; i < panels.Length; i++ )
         {
