@@ -106,8 +106,6 @@ public class SnakeScript : MonoBehaviour {
 
             }
 
-            ProbeGuidelines(newSnakePos);
-
             return true;
         }
         return false;
@@ -243,6 +241,8 @@ public class SnakeScript : MonoBehaviour {
                 vox.ExtendWest = false;
                 _board.SetVoxel(lln.Value, "Empty");
             }
+
+            ProbeGuidelines( position );
         }
 
     }

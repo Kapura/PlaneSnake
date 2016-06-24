@@ -9,8 +9,8 @@ public class Dragger : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragH
 
     public RectTransform[] dragPositions;
 
-    public float minXPosition;
-    public float maxXPosition;
+    public RectTransform leftEdge;
+    public RectTransform rightEdle;
 
     public float smoothness;
     bool dragging = false;
@@ -64,7 +64,7 @@ public class Dragger : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragH
         var position = dragBackground.position;
         position.x = eventData.position.x;
         dragBackground.position = position;
-        if ( position.x > maxXPosition || position.x < minXPosition )
+        if ( position.x > rightEdle.position.x || position.x < leftEdge.position.x )
         {
             OnEndDrag();
         }
