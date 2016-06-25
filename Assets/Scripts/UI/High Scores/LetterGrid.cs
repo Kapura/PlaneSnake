@@ -21,11 +21,11 @@ public class LetterGrid : MonoBehaviour
             {
                 if ( i >= _name.Length )
                 {
-                    output += " _";
+                    output += "_";
                 }
                 else
                 {
-                    output += " " + _name[i];
+                    output += _name[i];
                 }
             }
             nameText.text = output;

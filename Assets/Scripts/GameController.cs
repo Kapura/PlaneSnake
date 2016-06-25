@@ -40,6 +40,7 @@ public class GameController : MonoBehaviour
     void Awake()
     {
         InitModeArray();
+        SetDifficulty( 1 );
         board = GetComponent<BoardScript>();
         snake = GetComponent<SnakeScript>();
         resetPanel.gameObject.SetActive( false );
@@ -73,7 +74,7 @@ public class GameController : MonoBehaviour
 
     public void StartStrategicMode()
     {
-        StartNewGame( 8, .5f, 3 );
+        StartNewGame( 7, .5f, 3 );
     }
 
     public void StartArcadeMode()
