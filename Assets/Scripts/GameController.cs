@@ -10,16 +10,16 @@ public class GameController : MonoBehaviour
     BoardScript board;
     SnakeScript snake;
 
+    public AudioSource audio;
     public GameObject resetPanel;
     public HighScoresTable highScores;
     public Text yourScoreText;
     public GameObject menuScreen;
+    public GameObject creditScreen;
 
     public Dragger difficultySelector;
 
-    public string soundPath;
-    public string tone1, tone2, grabTone, turnTone, deathTone;
-    public string music;
+    public AudioClip grabTone, turnTone, deathTone;
     Dictionary<string, int> soundIds = new Dictionary<string, int>();
 
     public Material[] backgrounds;
@@ -44,12 +44,8 @@ public class GameController : MonoBehaviour
         board = GetComponent<BoardScript>();
         snake = GetComponent<SnakeScript>();
         resetPanel.gameObject.SetActive( false );
+        HideCredits();
 
-        soundIds[tone1] = AudioCenter.loadSound( tone1 );
-        soundIds[tone2] = AudioCenter.loadSound( tone2 );
-        soundIds[grabTone] = AudioCenter.loadSound( grabTone );
-        soundIds[turnTone] = AudioCenter.loadSound( turnTone );
-        soundIds[deathTone] = AudioCenter.loadSound( deathTone );
         /*
         upButton.OnClick = GoUp;
         downButton.OnClick = GoDown;
@@ -113,22 +109,9 @@ public class GameController : MonoBehaviour
 
     }
 
-    public void PlayMoveTone()
-    {
-        if ( _toning1 )
-        {
-            AudioCenter.playSound( soundIds[tone1] );
-        }
-        else
-        {
-            AudioCenter.playSound( soundIds[tone2] );
-        }
-        _toning1 = !_toning1;
-    }
-
     public void PlayGrabTone()
     {
-        AudioCenter.playSound( soundIds[grabTone] );
+        audio.PlayOneShot( grabTone );
     }
 
     // Update is called once per frame
@@ -188,7 +171,7 @@ public class GameController : MonoBehaviour
         if ( !board.isRotating && CanRotate )
         {
             board.RotateRight();
-            AudioCenter.playSound( soundIds[turnTone] );
+            audio.PlayOneShot( turnTone );
         }
     }
 
@@ -197,7 +180,7 @@ public class GameController : MonoBehaviour
         if ( !board.isRotating && CanRotate )
         {
             board.RotateLeft();
-            AudioCenter.playSound( soundIds[turnTone] );
+            audio.PlayOneShot( turnTone );
         }
     }
 
@@ -222,7 +205,7 @@ public class GameController : MonoBehaviour
 
     public void GameOver()
     {
-        AudioCenter.playSound( soundIds[deathTone] );
+        audio.PlayOneShot( deathTone );
         snake.OnSnakeDeath();
         resetPanel.SetActive( true );
         yourScoreText.text = "Score: " + board.score;
@@ -246,5 +229,15 @@ public class GameController : MonoBehaviour
     {
         menuScreen.SetActive( true );
         resetPanel.SetActive( false );
+    }
+
+    public void ShowCredits()
+    {
+        creditScreen.gameObject.SetActive( true );
+    }
+
+    public void HideCredits()
+    {
+        creditScreen.gameObject.SetActive( false );
     }
 }
